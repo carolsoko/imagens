@@ -164,6 +164,66 @@ def clean_url_value(value: str) -> Optional[str]:
     return None
 
 
+def _smart_title_case(token: str) -> str:
+    if "-" in token:
+        return "-".join(_smart_title_case(part) for part in token.split("-"))
+    if "." in token:
+        return token.upper()
+    if len(token) == 0:
+        return token
+    lower = token.lower()
+    return lower[0].upper() + lower[1:]
+
+
+def _format_author_abnt(name: str) -> str:
+    particles = {"da", "de", "do", "das", "dos", "e", "d", "di", "du", "van", "von", "der", "del", "della", "la", "le"}
+    name = re.sub(r"\s+", " ", name.strip())
+    if not name:
+        return name
+    # If already in 'Surname, Given' form
+    if "," in name:
+        left, right = name.split(",", 1)
+        surname = left.strip().upper()
+        given_parts = [p for p in right.strip().split() if p]
+        formatted_given: list[str] = []
+        for idx, part in enumerate(given_parts):
+            pl = part.lower().strip(".,")
+            if pl in particles and idx != 0:
+                formatted_given.append(pl)
+            else:
+                formatted_given.append(_smart_title_case(part))
+        return f"{surname}, {' '.join(formatted_given)}".strip()
+    # Otherwise assume 'Given Middle Surname'
+    parts = name.split()
+    if len(parts) == 1:
+        return parts[0].upper()
+    surname = parts[-1].upper()
+    given_parts = parts[:-1]
+    formatted_given: list[str] = []
+    for idx, part in enumerate(given_parts):
+        pl = part.lower().strip(".,")
+        if pl in particles and idx != 0:
+            formatted_given.append(pl)
+        else:
+            formatted_given.append(_smart_title_case(part))
+    return f"{surname}, {' '.join(formatted_given)}".strip()
+
+
+def normalize_author_list_abnt(author_value: str) -> str:
+    # Split by BibTeX 'and'
+    parts = re.split(r"\s+and\s+", author_value.strip())
+    normalized: list[str] = []
+    for p in parts:
+        token = p.strip().strip("{} ")
+        if not token:
+            continue
+        if re.search(r"\bothers\.?\b", token, flags=re.IGNORECASE):
+            normalized.append("others.")
+            continue
+        normalized.append(_format_author_abnt(token))
+    return " and ".join(normalized)
+
+
 def normalize_fields(entry_type: str, key: str, fields: List[Tuple[str, str, str]], entries_map: Optional[Dict[str, Tuple[str, List[Tuple[str, str, str]], List[str]]]] = None) -> List[Tuple[str, str, str]]:
     # Map fields; maintain order but with normalized names
     new_fields: List[Tuple[str, str, str]] = []
@@ -200,6 +260,7 @@ def normalize_fields(entry_type: str, key: str, fields: List[Tuple[str, str, str
         # Normalize author 'et al.' to BibTeX-friendly 'and others'
         if lname == "author":
             v = re.sub(r"\bet\s*al\.?\b", "and others", v, flags=re.IGNORECASE)
+            v = normalize_author_list_abnt(v)
         # Capture note for URL extraction
         if lname == "note":
             note_value_for_url = v
