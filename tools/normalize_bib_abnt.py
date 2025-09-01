@@ -76,7 +76,7 @@ def build_entry(entry_type: str, key: str, fields: List[Tuple[str, str, str]], u
     lines.append(f"@{entry_type}{{{key},")
     for indent, name, value in fields:
         use_indent = indent if indent is not None else indent_style
-        lines.append(f"{use_indent}{name} = {{{value}}}")
+        lines.append(f"{use_indent}{name} = {{{value}}},")
     lines.extend(unknown)
     lines.append("}")
     return "\n".join(lines)
@@ -137,15 +137,63 @@ def extract_url_and_access(note_value: str) -> Tuple[Optional[str], Optional[str
     return url, urldate
 
 
-def normalize_fields(entry_type: str, key: str, fields: List[Tuple[str, str, str]]) -> List[Tuple[str, str, str]]:
+def is_trivial_note(note_value: str) -> bool:
+    text = note_value
+    text = re.sub(r"Dispon[ií]vel\s+em:[^.;\n]+", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"Acess(?:o|ado)\s+em:[^.;\n]+", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"https?://\S+", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"[<>\s.,;:]+", " ", text).strip()
+    return text == ""
+
+
+def clean_url_value(value: str) -> Optional[str]:
+    # Remove angle brackets and any leading 'Disponível em:' prefix
+    candidate = value.strip().replace("<", "").replace(">", "")
+    # If contains an explicit URL, extract first http(s) substring
+    m = re.search(r"https?://\S+", candidate)
+    if m:
+        url = m.group(0)
+        # strip trailing punctuation
+        url = url.rstrip(".,);]")
+        return url
+    # If no URL but looks like 'www.' or domain, return it
+    m2 = re.search(r"\b(?:www\.)?[A-Za-z0-9.-]+\.[A-Za-z]{2,}(?:/\S*)?", candidate)
+    if m2:
+        return m2.group(0)
+    # Nothing valid
+    return None
+
+
+def normalize_fields(entry_type: str, key: str, fields: List[Tuple[str, str, str]], entries_map: Optional[Dict[str, Tuple[str, List[Tuple[str, str, str]], List[str]]]] = None) -> List[Tuple[str, str, str]]:
     # Map fields; maintain order but with normalized names
     new_fields: List[Tuple[str, str, str]] = []
     seen_names: set = set()
     note_value_for_url: Optional[str] = None
-    for indent, name, value in fields:
+    # Resolve crossref
+    crossref_key: Optional[str] = None
+    for _, n, v in fields:
+        if n.lower() == "crossref":
+            crossref_key = v.strip()
+            break
+    merged_fields: List[Tuple[str, str, str]] = list(fields)
+    if crossref_key and entries_map and crossref_key in entries_map:
+        parent_type, parent_fields, _ = entries_map[crossref_key]
+        child_names = {n.lower() for _, n, _ in merged_fields}
+        for p_indent, p_name, p_value in parent_fields:
+            pl = p_name.lower()
+            if pl not in child_names and pl not in {"key", "crossref"}:
+                merged_fields.append((p_indent, p_name, p_value))
+        merged_fields = [(i, n, v) for (i, n, v) in merged_fields if n.lower() != "crossref"]
+
+    for indent, name, value in merged_fields:
         lname = name.lower()
         # Trim whitespace around value
         v = value.strip()
+        # Normalize URL fields that mistakenly include extra text
+        if lname == "url":
+            cleaned = clean_url_value(v)
+            if cleaned:
+                v = cleaned
         # Fix doi format
         if lname == "doi":
             v = v.replace("http://doi.org/", "").replace("https://doi.org/", "").strip()
@@ -155,6 +203,26 @@ def normalize_fields(entry_type: str, key: str, fields: List[Tuple[str, str, str
         # Capture note for URL extraction
         if lname == "note":
             note_value_for_url = v
+            if is_trivial_note(v):
+                # skip trivial note
+                continue
+        # If bibliographic fields contain URL/note fragments, split and extract
+        if lname in {"journal", "publisher", "booktitle", "address"}:
+            if re.search(r"Dispon[ií]vel\s+em:|https?://", v, flags=re.IGNORECASE):
+                # try to extract URL and urldate
+                url_from_field, urldate_from_field = extract_url_and_access(v)
+                # strip text starting at 'Disponível em:'
+                v = re.split(r"Dispon[ií]vel\s+em:\s*", v, flags=re.IGNORECASE)[0].strip()
+                v = v.rstrip(" .;")
+                # add url/urldate if not present yet
+                existing_names = {n for _, n, _ in new_fields}
+                if url_from_field and "url" not in existing_names:
+                    new_fields.append((indent, "url", url_from_field))
+                if urldate_from_field and "urldate" not in existing_names:
+                    new_fields.append((indent, "urldate", urldate_from_field))
+        # Drop non-standard 'key' field
+        if lname == "key":
+            continue
         # Fix Bardin book common mistakes
         if key.lower() == "bardin2016":
             if lname == "edition" and v == "70":
@@ -221,8 +289,53 @@ def normalize_fields(entry_type: str, key: str, fields: List[Tuple[str, str, str
                     break
             if urldate_val and re.match(r"^\d{4}-\d{2}-\d{2}$", urldate_val):
                 new_fields.append((new_fields[0][0] if new_fields else "", "year", urldate_val[:4]))
+        # howpublished when URL present
+        if any(n == "url" for _, n, _ in new_fields) and not any(n == "howpublished" for _, n, _ in new_fields):
+            new_fields.append((new_fields[0][0] if new_fields else "", "howpublished", "Online"))
+
+    # language detection for PT-BR
+    if not any(n == "language" for _, n, _ in new_fields):
+        pt_markers = [
+            r"Dispon[ií]vel", r"Acesso", r"Lei nº", r"Decreto nº", r"Educa[çc][aã]o",
+            r"Sociedade", r"São Paulo", r"Edições", r"Revista", r"Anais"
+        ]
+        is_pt = False
+        for _, n, v in new_fields:
+            text = f"{n} {v}"
+            if any(re.search(p, text, flags=re.IGNORECASE) for p in pt_markers):
+                is_pt = True
+                break
+        if is_pt:
+            new_fields.append((new_fields[0][0] if new_fields else "", "language", "portuguese"))
 
     return new_fields
+
+
+def order_fields(entry_type: str, fields: List[Tuple[str, str, str]]) -> List[Tuple[str, str, str]]:
+    order_map = {
+        "article": ["author", "title", "journal", "volume", "number", "pages", "year", "doi", "url", "urldate", "language"],
+        "book": ["author", "title", "edition", "address", "publisher", "year", "isbn", "doi", "url", "urldate", "language"],
+        "inproceedings": ["author", "title", "booktitle", "year", "organization", "publisher", "address", "pages", "doi", "url", "urldate", "language"],
+        "techreport": ["author", "title", "institution", "year", "number", "address", "doi", "url", "urldate", "language"],
+        "misc": ["author", "title", "year", "howpublished", "url", "urldate", "language", "note"],
+    }
+    desired = order_map.get(entry_type.lower(), [])
+    ordered: List[Tuple[str, str, str]] = []
+    used = set()
+    indent_style = fields[0][0] if fields else ""
+    # add desired fields first
+    for name in desired:
+        for indent, n, v in fields:
+            if n == name and n not in used:
+                ordered.append((indent_style, n, v))
+                used.add(n)
+                break
+    # then remaining fields
+    for indent, n, v in fields:
+        if n not in used:
+            ordered.append((indent_style, n, v))
+            used.add(n)
+    return ordered
 
 
 def entry_fingerprint(entry_type: str, key: str, fields: List[Tuple[str, str, str]]) -> Tuple[str, str, str]:
@@ -260,13 +373,22 @@ def main() -> int:
     seen: set = set()
     dropped = 0
     changed = 0
+    # First parse all entries to support crossref resolution
+    parsed: List[Tuple[str, str, List[Tuple[str, str, str]], List[str]]] = []
+    entries_map: Dict[str, Tuple[str, List[Tuple[str, str, str]], List[str]]] = {}
 
     for entry_text in entries:
         try:
             entry_type, key, fields, unknown = parse_entry(entry_text)
         except Exception:
-            # keep as-is if parsing failed
-            normalized_entries.append(entry_text)
+            parsed.append(("", "", [], [entry_text]))
+            continue
+        parsed.append((entry_type, key, fields, unknown))
+        entries_map[key] = (entry_type, fields, unknown)
+
+    for entry_type, key, fields, unknown in parsed:
+        if not entry_type:
+            normalized_entries.append("\n".join(unknown))
             continue
 
         # Determine indent style from the first field if present
@@ -274,7 +396,8 @@ def main() -> int:
         if fields:
             indent_style = fields[0][0]
 
-        new_fields = normalize_fields(entry_type, key, fields)
+        new_fields = normalize_fields(entry_type, key, fields, entries_map)
+        new_fields = order_fields(entry_type, new_fields)
 
         # Deduplicate by fingerprint
         fp = entry_fingerprint(entry_type, key, new_fields)
