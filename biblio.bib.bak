@@ -9,7 +9,7 @@ doi = {10.3102/0013189X12463051}
 }
 
 @article{RESNICK2009,
-author = {RESNICK, M. and others.}
+author = {RESNICK, M. et al.}
 title = {Scratch: Programming for All}
 journal = {Communications of the ACM}
 volume = {52}
@@ -39,8 +39,6 @@ year = {2009}
     key = {W3C 2025}
     note = {About us. Disponível em: https://www.w3.org/about/. Acesso em: 25 mar. 2025}
     url = {https://www.w3.org/about/}
-    author = {W3C}
-    title = {About us}
 }
 
 @misc{gesac,
@@ -48,7 +46,6 @@ year = {2009}
     note = {Disponível em: https://www.gov.br/pt-br/servicos/obter-conexao-de-internet-programa-wi-fi-brasil, acessado em: 17 de abril de 2025}
     url = {https://www.gov.br/pt-br/servicos/obter-conexao-de-internet-programa-wi-fi-brasil}
     urldate = {2025-04-17}
-    year = {2025}
 }
 
 @misc{proinfo,
@@ -56,7 +53,6 @@ year = {2009}
     note = {Disponível em: https://www.gov.br/fnde/pt-br/acesso-a-informacao/acoes-e-programas/programas/proinfo, acessado em: 17 de abril de 2025}
     url = {https://www.gov.br/fnde/pt-br/acesso-a-informacao/acoes-e-programas/programas/proinfo}
     urldate = {2025-04-17}
-    year = {2025}
 }
 
 @misc{Decreto5296_2004,
@@ -64,7 +60,6 @@ year = {2009}
     year = {2004}
     note = {Decreto nº 5.296, de 2 de dezembro de 2004. Regulamenta as Leis nos 10.048, de 8 de novembro de 2000, que dá prioridade de atendimento às pessoas que especifica, e 10.098, de 19 de dezembro de 2000, que estabelece normas gerais e critérios básicos para a promoção da acessibilidade das pessoas deficientes ou com mobilidade reduzida, e dá outras providências. 2004. Disponível em: https://www.planalto.gov.br/ccivil\_03/\_ato2004-2006/2004/decreto/d5296.htm. Acesso em: 25 mar. 2025}
     url = {https://www.planalto.gov.br/ccivil\_03/\_ato2004-2006/2004/decreto/d5296.htm}
-    title = {Decreto nº 5.296, de 2 de dezembro de 2004. Regulamenta as Leis nos 10.048, de 8 de novembro de 2000, que dá prioridade de atendimento às pessoas que especifica, e 10.098, de 19 de dezembro de 2000, que estabelece normas gerais e critérios básicos para a promoção da acessibilidade das pessoas deficientes ou com mobilidade reduzida, e dá outras providências. 2004}
 }
 
 @misc{Decreto6949_2009,
@@ -72,7 +67,6 @@ year = {2009}
     year = {2009}
     note = {Decreto nº 6.949, de 25 de agosto de 2009. Promulga a Convenção Internacional sobre os Direitos das Pessoas com Deficiência e seu Protocolo Facultativo, assinados em Nova York, em 30 de março de 2007. Disponível em: https://www.planalto.gov.br/ccivil\_03/\_ato2007-2010/2009/decreto/d6949.htm. Acesso em: 25 mar. 2025}
     url = {https://www.planalto.gov.br/ccivil\_03/\_ato2007-2010/2009/decreto/d6949.htm}
-    title = {Decreto nº 6.949, de 25 de agosto de 2009. Promulga a Convenção Internacional sobre os Direitos das Pessoas com Deficiência e seu Protocolo Facultativo, assinados em Nova York, em 30 de março de 2007}
 }
 
 @misc{LeiInclusao2015,
@@ -81,7 +75,6 @@ year = {2009}
     note = {Lei nº 13.146, de 6 de julho de 2015. Vigência Institui a Lei Brasileira de Inclusão da Pessoa com Deficiência (Estatuto da Pessoa com Deficiência). 2015. Disponível em: https://www.planalto.gov.br/ccivil\_03/\_ato2015-2018/2015/lei/l13146.htm. Acessado em: 25 mar 2025}
     url = {https://www.planalto.gov.br/ccivil\_03/\_ato2015-2018/2015/lei/l13146.htm}
     urldate = {2025-03-25}
-    title = {Lei nº 13.146, de 6 de julho de 2015. Vigência Institui a Lei Brasileira de Inclusão da Pessoa com Deficiência (Estatuto da Pessoa com Deficiência). 2015}
 }
 
 @misc{Lei13409_2016,
@@ -89,7 +82,6 @@ year = {2009}
     year = {2016}
     note = {Lei nº 13.409, de 28 de dezembro de 2016. Altera a Lei nº 12.711, de 29 de agosto de 2012, para dispor sobre a reserva de vagas para pessoas com deficiência nos cursos técnico de nível médio e superior das instituições federais de ensino. 2016. Disponível em: <http://www.planalto.gov.br/ccivil\_03/\_ato2015-2018/2016/lei/L13409.htm> Acesso em: 25 mar. 2025}
     url = {http://www.planalto.gov.br/ccivil\_03/\_ato2015-2018/2016/lei/L13409.htm}
-    title = {Lei nº 13.409, de 28 de dezembro de 2016. Altera a Lei nº 12.711, de 29 de agosto de 2012, para dispor sobre a reserva de vagas para pessoas com deficiência nos cursos técnico de nível médio e superior das instituições federais de ensino. 2016}
 }
 
 @article{Bers2010,
@@ -126,7 +118,6 @@ doi = {10.3102/0013189X10364671}
     year = {2006}
     note = {Ministério da Educação - Convenção sobre os Direitos das Pessoas com Deficiência. Disponível em: <http://portal.mec.gov.br/index.php?option=com\_docman&view=download&alias=424-cartilha-c&category\_slug=documentos-pdf&Itemid=30192>. Acesso em: 25 mar. 2025}
     url = {http://portal.mec.gov.br/index.php?option=com\_docman&view=download&alias=424-cartilha-c&category\_slug=documentos-pdf&Itemid=30192}
-    title = {Ministério da Educação - Convenção sobre os Direitos das Pessoas com Deficiência}
 }
 
 @article{FerrazDiniz2020,
@@ -142,7 +133,6 @@ doi = {10.3102/0013189X10364671}
     key = {BRASIL}
     note = {Ministério da Educação - Sobre a Lei de Acesso à Informação . Disponível em: <http://portal.mec.gov.br/index.php?option=com\_content&view=article&id=17676&Itemid=1172#:~:text=A%20Lei%20n%C2%BA%2012.527%2C%20sancionada,Estados%2C%20Distrito%20Federal%20e%20Munic%C3%ADpios.> . Acesso em: 25 mar. 2025}
     url = {http://portal.mec.gov.br/index.php?option=com\_content&view=article&id=17676&Itemid=1172#:~:text=A%20Lei%20n%C2%BA%2012.527%2C%20sancionada}
-    title = {Ministério da Educação - Sobre a Lei de Acesso à Informação}
 }
 
 @techreport{k12Report2003,
@@ -510,7 +500,6 @@ title = "{Pensamento Computacional: Transformando Ideias em Jogos Digitais Usand
     year = {2022}
     note = {ORGANIZAÇÃO PARA A COOPERAÇÃO E DESENVOLVIMENTO. Results from PISA 2022: country notes – Brazil. Disponível em: <https://www.oecd.org/publication/pisa-2022-results/webbooks/dynamic/pisa-country-notes/61690648/pdf/brazil.pdf>. Acesso em: 21/06/2024.}
     url = {https://www.oecd.org/publication/pisa-2022-results/webbooks/dynamic/pisa-country-notes/61690648/pdf/brazil.pdf}
-    title = {ORGANIZAÇÃO PARA A COOPERAÇÃO E DESENVOLVIMENTO. Results from PISA 2022: country notes – Brazil}
 }
 
 @article{BellSTEAM2018,
